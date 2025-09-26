@@ -1,10 +1,10 @@
 # EntoMLgist
-Insect detection/classification using YOLO, Visual Transformers, and NLP, using Airflow for continous data ingestion and training on data from Reddit's /r/whatisthisbug.
+Insect detection/classification using YOLO, Visual Transformers, and NLP, using Dagster for continous data ingestion and training on data from Reddit's /r/whatisthisbug.
 
 This repo is currently under construction.
 
 ## WIP goals/outline
-- [ ] Set up dockerized Airflow, every step below is a DAG 
+- [ ] Set up dockerized Dagster, every step below is a DAG 
 - [ ] Retrieve images from reddit's "what is this bug" subreddit
 - [ ] Retrieve comments from the above as well
 - [ ] Store already gotten comments and post IDs in a DB so we don't get duplicates in the future
