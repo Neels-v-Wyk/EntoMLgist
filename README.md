@@ -4,14 +4,15 @@ Insect detection/classification using YOLO, Visual Transformers, and NLP, using 
 This repo is currently under construction.
 
 ## WIP goals/outline
-- [ ] Set up dockerized Dagster, every step below is a DAG 
-- [ ] Retrieve images from reddit's "what is this bug" subreddit
-- [ ] Retrieve comments from the above as well
-- [ ] Store already gotten comments and post IDs in a DB so we don't get duplicates in the future
+- [x] Set up dockerized Dagster, every step below is a DAG 
+- [x] Retrieve images from reddit's "what is this bug" subreddit
+- [x] Retrieve comments from the above as well
+- [x] Store already gotten comments and post IDs in a DB so we don't get duplicates in the future
 - [ ] Create a sample training data set which is manually labeled for insect identification (location only)
 - [ ] Train YOLO to find insects
 - [ ] Use NLP to extract insect names from top comments on posts, for use in classification training
 - [ ] Set up a ViT to classify insects based on cropped images from YOLO and text data
+- [ ] Use playwright to leave comments on posts from ViT output
 - [ ] Continously improve the model on new posts
 
 ## Why even do this?
