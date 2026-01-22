@@ -204,3 +204,6 @@ __marimo__/
 
 # sqlite database files
 *.db
+
+# local downloads:
+downloads/
