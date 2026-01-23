@@ -1,3 +1,14 @@
+# Environment variables
+.env
+
+# PostgreSQL data directory
+postgres_data/
+
+# SQLite databases (deprecated)
+*.db
+*.sqlite
+*.sqlite3
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

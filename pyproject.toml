@@ -3,7 +3,13 @@ name = "EntoMLgist"
 requires-python = ">=3.9,<3.14"
 version = "0.1.0"
 dependencies = [
+    "bs4>=0.0.2",
     "dagster==1.11.12",
+    "dagster-dg-cli>=1.11.12",
+    "dagster-webserver>=1.11.12",
+    "sqlmodel>=0.0.22",
+    "psycopg2-binary>=2.9.9",
+    "python-dotenv>=1.0.0",
 ]
 
 [dependency-groups]
