@@ -5,12 +5,30 @@ import os
 import html
 from sqlmodel import Session, select
 from EntoMLgist.defs.assets.pictures.data_population import retrieve_post_data
-from EntoMLgist.defs.assets.pictures.constants import DEFAULT_USER_AGENT, IMAGE_DOWNLOAD_PATH, IMAGE_DOWNLOAD_UPVOTE_THRESHOLD, IMAGE_COMMENT_COUNT_THRESHOLD
+from EntoMLgist.defs.assets.pictures.constants import DEFAULT_USER_AGENT, IMAGE_DOWNLOAD_PATH, IMAGE_DOWNLOAD_UPVOTE_THRESHOLD, IMAGE_COMMENT_COUNT_THRESHOLD, IMAGE_ID_HASH_ALGORITHM, IMAGE_ID_HASH_LENGTH
 from EntoMLgist.models.database import Post, ImageUrl
 
 def generate_image_id(url: str) -> str:
-    """Generate a short hash ID for an image URL."""
-    return hashlib.md5(url.encode()).hexdigest()[:8]
+    """Generate a short hash ID for an image URL using configurable algorithm.
+    
+    Args:
+        url: The image URL to hash
+    
+    Returns:
+        A hash string of length IMAGE_ID_HASH_LENGTH using IMAGE_ID_HASH_ALGORITHM
+    
+    Raises:
+        ValueError: If IMAGE_ID_HASH_ALGORITHM is not supported
+    """
+    supported_algorithms = {'sha256', 'sha1', 'md5'}
+    algorithm = IMAGE_ID_HASH_ALGORITHM.lower()
+    
+    if algorithm not in supported_algorithms:
+        raise ValueError(f"Unsupported hash algorithm: {algorithm}. Supported: {supported_algorithms}")
+    
+    hash_obj = hashlib.new(algorithm)
+    hash_obj.update(url.encode())
+    return hash_obj.hexdigest()[:IMAGE_ID_HASH_LENGTH]
 
 def get_extension_from_url(url: str) -> str:
     """Extract file extension from URL, handling query parameters."""
@@ -18,6 +36,7 @@ def get_extension_from_url(url: str) -> str:
 
 def get_image_uris_from_response(post_json: dict, post_id: str) -> list:
     """Extract image URIs from Reddit post JSON response."""
+    # TODO: Add type hints (list[dict]) and define data class for image URI objects, make extension validation regex configurable
     image_uris = []
     
     try:
@@ -49,6 +68,7 @@ def get_image_uris_from_response(post_json: dict, post_id: str) -> list:
 
 def download_image_from_uri(url: str, local_path: str) -> bool:
     """Download a single image from a URL and save it locally. Returns True if successful."""
+    # TODO: Add retry logic with exponential backoff, validate image file integrity (magic bytes/hash), support streaming for large files
     try:
         # Decode HTML entities in the URL (e.g., &amp; -> &)
         url = html.unescape(url)
@@ -134,6 +154,7 @@ def download_all_pictures(context: dg.AssetExecutionContext):
 @dg.asset(required_resource_keys={"db_session"}, deps=["populate_post_upvotes", "populate_comments", "get_image_uris_from_posts"])
 def download_filtered_pictures(context: dg.AssetExecutionContext):
     """Downloads pictures from posts that pass IMAGE_COMMENT_COUNT_THRESHOLD and IMAGE_DOWNLOAD_UPVOTE_THRESHOLD."""
+    # TODO: Move comment count filtering to SQL query (GROUP BY + HAVING) to avoid N+1 queries, add batch processing for scalability
     from sqlmodel import func, col
     from EntoMLgist.models.database import Comment
     
