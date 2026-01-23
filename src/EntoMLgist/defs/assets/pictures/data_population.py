@@ -33,25 +33,30 @@ def retrieve_post_data(post_id: str, backoff: float = 1.0, max_backoff: float = 
     return r
 
 def extract_comments(comments_data, post_id):
-    """Extracts RedditComment objects from the comments data."""
+    """Extracts top-level RedditComment objects from the comments data.
+    
+    Filters out:
+    - AutoModerator comments
+    - Replies to other comments (only top-level comments are included)
+    """
     comments = []
     for comment in comments_data:
         if comment['kind'] != 't1':
             continue
         comment_data = comment['data']
         try:
+            # Skip AutoModerator comments
+            author = comment_data.get('author', '')
+            if author == 'AutoModerator':
+                continue
+            
             reddit_comment = RedditComment(
                 parent_post_id=post_id,
                 comment_id=comment_data.get('id'),
                 body=comment_data.get('body', ''),
                 upvotes=comment_data.get('ups', 0)
             )
-            comments.append(reddit_comment)
-
-            # Recursively extract replies if they exist
-            if 'replies' in comment_data and comment_data['replies']:
-                nested_comments = extract_comments(comment_data['replies']['data']['children'], post_id)
-                comments.extend(nested_comments)
+            comments.append(reddit_comment)            
         except KeyError as e:
             # Log and skip invalid comments
             print(f"Skipping invalid comment due to missing key: {e}")
