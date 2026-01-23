@@ -14,6 +14,7 @@ def get_posts_from_db(session: Session) -> list[Post]:
     return list(posts)
 
 def retrieve_post_data(post_id: str, backoff: float = 1.0, max_backoff: float = MAX_BACKOFF) -> requests.Response:
+    # TODO: Extract URL building and header creation to separate functions for reusability and testability
     url = f"https://www.reddit.com/r/{SUBREDDIT}/comments/{post_id}.json"
     headers = {'User-Agent': DEFAULT_USER_AGENT}
     backoff_duration = backoff
@@ -39,6 +40,8 @@ def extract_comments(comments_data, post_id):
     - AutoModerator comments
     - Replies to other comments (only top-level comments are included)
     """
+    # TODO: Add comprehensive logging instead of silent print(); consider custom exceptions for invalid comments
+    # TODO: Make AutoModerator filter configurable; consider parameterizing comment filters for extensibility
     comments = []
     for comment in comments_data:
         if comment['kind'] != 't1':
@@ -71,6 +74,7 @@ def log_response_details(context, post_id, response):
 @dg.asset(required_resource_keys={"db_session"}, deps=["save_hot_posts_to_db"])
 def fetch_post_data(context: dg.AssetExecutionContext) -> dict:
     """Fetches and caches raw post JSON data for all posts in the database."""
+    # TODO: Implement disk/persistent caching layer to avoid refetching, add cache invalidation strategy
     session: Session = context.resources.db_session
     posts = get_posts_from_db(session)
     
@@ -96,6 +100,7 @@ def fetch_post_data(context: dg.AssetExecutionContext) -> dict:
 
 @dg.asset(required_resource_keys={"db_session"})
 def populate_post_upvotes(context: dg.AssetExecutionContext, fetch_post_data: dict):
+    # TODO: Extract JSON data parsing to helper function, add defensive checks for missing keys with sensible defaults
     session: Session = context.resources.db_session
     posts = get_posts_from_db(session)
 

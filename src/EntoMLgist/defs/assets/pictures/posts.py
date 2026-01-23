@@ -6,6 +6,7 @@ from EntoMLgist.defs.assets.pictures.constants import SUBREDDIT, DEFAULT_USER_AG
 
 
 def get_posts(limit: int = 100) -> requests.Response:
+    # TODO: Implement connection pooling and add request timeout/retry decorator
     url = f"https://www.reddit.com/r/{SUBREDDIT}/hot.json?limit={limit}"
     headers = {'User-Agent': DEFAULT_USER_AGENT}
     
@@ -23,6 +24,7 @@ def get_posts(limit: int = 100) -> requests.Response:
         return MockResponse()
 
 def filter_posts(posts: requests.Response) -> list[RedditPost]:
+    # TODO: Define return type as list[RedditPost] in docstring, add filtering logic (score, age, etc) beyond parsing
     # Sort posts into {post_id, title} from raw html
     filtered_posts = []
     
@@ -61,6 +63,7 @@ def get_hot_posts(context: dg.AssetExecutionContext) -> list[RedditPost]:
 
 @dg.asset(required_resource_keys={"db_session"}, deps=["create_database_tables"])
 def save_hot_posts_to_db(context: dg.AssetExecutionContext):
+    # TODO: Use bulk insert for better performance, handle duplicate key errors gracefully with upsert
     from sqlmodel import Session
     from EntoMLgist.models.database import Post
     

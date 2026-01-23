@@ -11,6 +11,7 @@ def create_database_tables(context: dg.AssetExecutionContext):
     SQLModel automatically creates tables with proper foreign keys,
     indexes, and constraints based on the model definitions.
     """
+    # TODO: Use migrations framework for schema versioning
     try:
         # Create all tables
         SQLModel.metadata.create_all(engine)
