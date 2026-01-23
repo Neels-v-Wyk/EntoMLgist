@@ -9,7 +9,7 @@ Insect detection/classification using YOLO, Visual Transformers, and NLP, using 
 - Docker
 - uv
 
-### Quick Makefil reference
+### Quick Makefile reference
 
 ```bash
 # Install dependencies
