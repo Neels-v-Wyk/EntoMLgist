@@ -1,6 +1,6 @@
 # EntoMLgist
 
-Insect detection/classification using YOLO, Visual Transformers, and NLP, using Dagster for continous data ingestion and training on data from Reddit's /r/whatisthisbug.
+An automated insect identification system for Reddit's /r/whatisthisbug using semi-automatic labeling, taxonomy normalization, and custom ML models. Dagster orchestrates continuous data ingestion, comment analysis, and model training.
 
 ## Quick Setup
 
@@ -45,7 +45,7 @@ Database credentials are in `.env` (copy from `.env.example` if needed).
 
 ## Architecture
 
-Assets:
+### Data Ingestion Pipeline (WIP)
 - `create_database_tables` - Initialize database schema
 - `save_hot_posts_to_db` - Fetch hot posts from /r/whatisthisbug
 - `fetch_post_data` - Cache Reddit API responses
@@ -54,19 +54,56 @@ Assets:
 - `get_image_uris_from_posts` - Extract image URLs
 - `download_filtered_pictures` - Download images from high-quality posts
 
-## Project Goals
+### Labeling & Taxonomy Pipeline (UNIMPLEMENTED)
+- `extract_insect_names_from_comments` - Extract insect mentions from Reddit comments
+- `normalize_insect_names` - Query GBIF API to map common names → scientific taxonomy
+- `consensus_labeling` - Filter posts by confidence threshold (multiple sources agreeing)
+- `generate_training_dataset` - Prepare clean, labeled dataset
 
-- [x] Set up dockerized Dagster, every step below is a DAG 
-- [x] Retrieve images from reddit's "what is this bug" subreddit
-- [x] Retrieve comments from the above as well
-- [x] Store already gotten comments and post IDs in a DB so we don't get duplicates in the future
-- [ ] Create a sample training data set which is manually labeled for insect identification (location only)
-- [ ] Train YOLO to find insects
-- [ ] Use NLP to extract insect names from top comments on posts, for use in classification training
-- [ ] Set up a ViT to classify insects based on cropped images from YOLO and text data
-- [ ] Use playwright to leave comments on posts from ViT output
-- [ ] Continously improve the model on new posts
+### Model Training & Inference Pipeline (UNIMPLEMENTED)
+- `generate_weak_yolo_labels` - Use weak YOLO to auto-generate bounding boxes
+- `validate_annotations` - Flag auto-generated boxes for human review
+- `train_detection_model` - Train YOLOv11 on annotated dataset
+- `fine_tune_vit_classifier` - Fine-tune Vision Transformer on cropped insect images
+- `infer_on_new_posts` - Run YOLO detection + ViT classification on new Reddit posts
+- `format_bot_response` - Generate Reddit comment responses
+
+## Implementation
+
+### Semi-Automatic Labeling (WIP)
+- [x] Set up dockerized Dagster for ETL
+- [x] Retrieve images and comments from /r/whatisthisbug
+- [x] Store data in PostgreSQL (no duplicates)
+- [ ] Extract insect names from comments (semantic NLP parsing)
+- [ ] Normalize names to scientific taxonomy via GBIF API (handle "ladybug"/"ladybird" synonyms)
+- [ ] Build consensus scoring (filter posts where multiple comments agree on ID)
+- [ ] Collect 500-1000 high-confidence labeled images
+
+### Object Detection
+- [ ] Manual annotation of 150-200 images with bounding boxes (Streamlit UI or CVAT)
+- [ ] Export annotations in YOLO format
+- [ ] Train YOLOv11 detection model on weak annotated set
+- [ ] Evaluate detection performance on holdout set
+
+### Classification (ViT)
+- [ ] Use trained YOLO to auto-generate bounding boxes on full 500-1000 labeled dataset
+- [ ] Active learning: flag low-confidence boxes for human review and correction
+- [ ] Fine-tune Vision Transformer (ViT) on cropped insect images
+- [ ] Validate classification accuracy (~70%+ target)
+
+### Deployment
+- [ ] Integrate YOLO + classifier into Dagster pipeline
+- [ ] Build Reddit bot poster using playwright
+- [ ] Test bot responses on recent posts
+- [ ] Monitor bot accuracy and collect feedback
+- [ ] Set up continuous retraining on new posts (weekly)
+
+### Scaling / Improvement
+- [ ] Improve classification on edge cases (multiple insects, unclear images)
+- [ ] Fine-tune models on user feedback and misclassifications
+- [ ] Handle multi-insect images (post-process YOLO detections)
+- [ ] Performance optimization (model quantization, inference speed)
 
 ## Why
 
-Too many "is this a bedbug?" posts on /r/whatisthisbug when it's obviously a bedbug or german cockroach. If this works well enough, it can become a bot to answer these repetitive questions automatically.
+I got tired of too many "is this a bedbug?" posts on /r/whatisthisbug when it's obviously a bedbug or german cockroach. If this works well enough, it can become a bot to answer these repetitive questions automatically.
