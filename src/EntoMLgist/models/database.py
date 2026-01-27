@@ -10,6 +10,8 @@ class Post(SQLModel, table=True):
     post_id: str = Field(primary_key=True, description="Reddit post ID")
     title: str = Field(description="Post title")
     upvotes: int = Field(default=0, description="Number of upvotes")
+    extracted_location: Optional[str] = Field(default=None, description="Extracted insect location from post, if any")
+    extracted_location_confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     
     # Relationships
     comments: list["Comment"] = Relationship(back_populates="post", cascade_delete=True)
