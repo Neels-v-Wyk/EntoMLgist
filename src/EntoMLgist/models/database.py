@@ -24,6 +24,7 @@ class Comment(SQLModel, table=True):
     parent_post_id: str = Field(foreign_key="posts.post_id", description="Parent post ID")
     body: str = Field(description="Comment text content")
     upvotes: int = Field(default=0, description="Number of upvotes")
+    extracted_name: Optional[str] = Field(default=None, description="Extracted insect name from comment, if any")
     
     # Relationships
     post: Optional[Post] = Relationship(back_populates="comments")
