@@ -55,7 +55,7 @@ Database credentials are in `.env` (copy from `.env.example` if needed).
 - `download_filtered_pictures` - Download images from high-quality posts
 
 ### Labeling & Taxonomy Pipeline (UNIMPLEMENTED)
-- `extract_insect_names_from_comments` - Extract insect mentions from Reddit comments
+- `extract_insect_names_from_comments` - Extract insect mentions from Reddit comments using https://github.com/fastino-ai/GLiNER2
 - `normalize_insect_names` - Query GBIF API to map common names → scientific taxonomy
 - `consensus_labeling` - Filter posts by confidence threshold (multiple sources agreeing)
 - `generate_training_dataset` - Prepare clean, labeled dataset
@@ -74,7 +74,7 @@ Database credentials are in `.env` (copy from `.env.example` if needed).
 - [x] Set up dockerized Dagster for ETL
 - [x] Retrieve images and comments from /r/whatisthisbug
 - [x] Store data in PostgreSQL (no duplicates)
-- [ ] Extract insect names from comments (semantic NLP parsing)
+- [ ] Extract insect names from comments using GLiNER2
 - [ ] Normalize names to scientific taxonomy via GBIF API (handle "ladybug"/"ladybird" synonyms)
 - [ ] Build consensus scoring (filter posts where multiple comments agree on ID)
 - [ ] Collect 500-1000 high-confidence labeled images
