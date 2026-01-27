@@ -2,7 +2,7 @@ import requests
 import dagster as dg
 from time import sleep
 from sqlmodel import Session, select
-from EntoMLgist.defs.assets.pictures.constants import SUBREDDIT, DEFAULT_USER_AGENT, POST_CRAWL_DELAY, POST_TOP_COMMENTS_NUM, MAX_BACKOFF
+from EntoMLgist.defs.assets.reddit.constants import SUBREDDIT, DEFAULT_USER_AGENT, POST_CRAWL_DELAY, POST_TOP_COMMENTS_NUM, MAX_BACKOFF
 from EntoMLgist.models.reddit import RedditPost, RedditComment
 from EntoMLgist.models.database import Post, Comment
 from requests.exceptions import JSONDecodeError
@@ -23,6 +23,7 @@ def retrieve_post_data(post_id: str, backoff: float = 1.0, max_backoff: float = 
     if r.status_code == 429:
         # Use exponential backoff for rate limiting, but cap at max_backoff
         if backoff_duration >= max_backoff:
+            # TODO: Let's implement a logger instead of raising an exception here
             raise Exception(f"Max retries exceeded for post {post_id} due to rate limiting")
         sleep(backoff_duration)
         return retrieve_post_data(post_id, backoff=min(backoff_duration * 1.4, max_backoff))
@@ -77,6 +78,7 @@ def fetch_post_data(context: dg.AssetExecutionContext) -> dict:
     # TODO: Implement disk/persistent caching layer to avoid refetching, add cache invalidation strategy
     session: Session = context.resources.db_session
     posts = get_posts_from_db(session)
+    posts_populated = 0
     
     post_data_cache = {}
     for post in posts:
@@ -91,11 +93,12 @@ def fetch_post_data(context: dg.AssetExecutionContext) -> dict:
                 continue
             
             post_data_cache[post.post_id] = response.json()
+            posts_populated += 1
             sleep(POST_CRAWL_DELAY)
         except Exception as e:
             context.log.error(f"Error fetching data for post {post.post_id}: {e}")
     
-    context.log.info(f"Fetched data for {len(post_data_cache)} posts")
+    context.log.info(f"Fetched data for {posts_populated} posts, {len(posts) - posts_populated} skipped, of which {len(posts) - posts_populated - posts_populated} were errors.")
     return post_data_cache
 
 @dg.asset(required_resource_keys={"db_session"})

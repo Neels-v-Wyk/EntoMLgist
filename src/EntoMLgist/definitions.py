@@ -1,18 +1,20 @@
 import dagster as dg
 from sqlmodel import Session
+from gliner2 import GLiNER2
 from EntoMLgist.database_config import engine
-from EntoMLgist.defs.assets.pictures.database import create_database_tables
-from EntoMLgist.defs.assets.pictures.posts import save_hot_posts_to_db
-from EntoMLgist.defs.assets.pictures.data_population import (
+from EntoMLgist.defs.assets.reddit.database import create_database_tables
+from EntoMLgist.defs.assets.reddit.posts import save_hot_posts_to_db
+from EntoMLgist.defs.assets.reddit.data_population import (
     fetch_post_data,
     populate_post_upvotes,
     populate_comments,
 )
-from EntoMLgist.defs.assets.pictures.download import (
+from EntoMLgist.defs.assets.reddit.download import (
     get_image_uris_from_posts,
-    download_all_pictures,
+    # download_all_pictures,  # Temporarily disabled
     download_filtered_pictures,
 )
+from EntoMLgist.defs.assets.nlp.comment_extraction import extract_insect_names_from_comments
 from EntoMLgist.defs.jobs import all_assets_job, full_reddit_pipeline_job
 
 @dg.resource
@@ -29,6 +31,15 @@ def db_session_resource(context):
         finally:
             context.log.info("Database session closed")
 
+@dg.resource
+def gliner_extractor_resource(context):
+    """GLiNER2 model resource - loads once and persists across assets."""
+    context.log.info("Loading GLiNER2 model...")
+    extractor = GLiNER2.from_pretrained("fastino/gliner2-base-v1")
+    # TODO: Add parameterization for different models or custom models
+    context.log.info("GLiNER2 model loaded successfully")
+    return extractor
+
 all_assets = [
     create_database_tables,
     save_hot_posts_to_db,
@@ -36,8 +47,9 @@ all_assets = [
     populate_post_upvotes,
     populate_comments,
     get_image_uris_from_posts,
-    download_all_pictures,
+    # download_all_pictures,  # Temporarily disabled
     download_filtered_pictures,
+    extract_insect_names_from_comments,
 ]
 
 defs = dg.Definitions(
@@ -45,5 +57,6 @@ defs = dg.Definitions(
     jobs=[full_reddit_pipeline_job, all_assets_job],
     resources={
         "db_session": db_session_resource,
+        "gliner_extractor": gliner_extractor_resource,
     },
 )

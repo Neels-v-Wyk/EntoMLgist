@@ -2,7 +2,7 @@
 import requests
 import dagster as dg
 from EntoMLgist.models.reddit import RedditPost
-from EntoMLgist.defs.assets.pictures.constants import SUBREDDIT, DEFAULT_USER_AGENT, POST_CRAWL_DELAY, TOTAL_PICTURES
+from EntoMLgist.defs.assets.reddit.constants import SUBREDDIT, DEFAULT_USER_AGENT, POST_CRAWL_DELAY, TOTAL_PICTURES
 
 
 def get_posts(limit: int = 100) -> requests.Response:
@@ -97,3 +97,7 @@ def save_hot_posts_to_db(context: dg.AssetExecutionContext):
     except Exception as e:
         context.log.error(f"Unexpected error in save_hot_posts_to_db: {e}")
         raise
+
+    return dg.MaterializeResult(
+        metadata={"saved_posts_count": saved_count}
+    )

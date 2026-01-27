@@ -17,9 +17,19 @@ def create_database_tables(context: dg.AssetExecutionContext):
         SQLModel.metadata.create_all(engine)
         context.log.info("Database tables created successfully")
         
-        # Create additional indexes for better query performance
         session: Session = context.resources.db_session
         
+        # Ensure all expected columns exist (handles schema evolution)
+        # Add missing columns to posts table
+        session.exec(text(
+            "ALTER TABLE posts ADD COLUMN IF NOT EXISTS extracted_location TEXT"
+        ))
+        session.exec(text(
+            "ALTER TABLE posts ADD COLUMN IF NOT EXISTS extracted_location_confidence REAL"
+        ))
+        context.log.info("Ensured posts table has all required columns")
+        
+        # Create additional indexes for better query performance
         # Index for comments by parent post
         session.exec(text(
             "CREATE INDEX IF NOT EXISTS idx_comments_parent_post ON comments(parent_post_id)"

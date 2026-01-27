@@ -4,8 +4,8 @@ import hashlib
 import os
 import html
 from sqlmodel import Session, select
-from EntoMLgist.defs.assets.pictures.data_population import retrieve_post_data
-from EntoMLgist.defs.assets.pictures.constants import DEFAULT_USER_AGENT, IMAGE_DOWNLOAD_PATH, IMAGE_DOWNLOAD_UPVOTE_THRESHOLD, IMAGE_COMMENT_COUNT_THRESHOLD, IMAGE_ID_HASH_ALGORITHM, IMAGE_ID_HASH_LENGTH
+from EntoMLgist.defs.assets.reddit.data_population import retrieve_post_data
+from EntoMLgist.defs.assets.reddit.constants import DEFAULT_USER_AGENT, IMAGE_DOWNLOAD_PATH, IMAGE_DOWNLOAD_UPVOTE_THRESHOLD, IMAGE_COMMENT_COUNT_THRESHOLD, IMAGE_ID_HASH_ALGORITHM, IMAGE_ID_HASH_LENGTH
 from EntoMLgist.models.database import Post, ImageUrl
 
 def generate_image_id(url: str) -> str:
@@ -130,7 +130,8 @@ def get_image_uris_from_posts(context: dg.AssetExecutionContext, fetch_post_data
         except Exception as e:
             context.log.error(f"Error extracting image URIs for post {post.post_id}: {e}")
 
-@dg.asset(required_resource_keys={"db_session"}, deps=["get_image_uris_from_posts"])
+# Temporarily disabling this asset to avoid excessive downloads during testing
+#@dg.asset(required_resource_keys={"db_session"}, deps=["get_image_uris_from_posts"])
 def download_all_pictures(context: dg.AssetExecutionContext):
     """Downloads all pictures from the image_urls table and updates local_path and downloaded flag."""
     session: Session = context.resources.db_session
@@ -150,6 +151,10 @@ def download_all_pictures(context: dg.AssetExecutionContext):
             context.log.info(f"Image {image.image_id} saved as {image.parent_post_id}-{image.image_id}.{image.extension}")
         else:
             context.log.error(f"Failed to download image {image.image_id}")
+
+    return dg.MaterializeResult(
+        metadata={"downloaded_images_count": len(images)}
+    )
 
 @dg.asset(required_resource_keys={"db_session"}, deps=["populate_post_upvotes", "populate_comments", "get_image_uris_from_posts"])
 def download_filtered_pictures(context: dg.AssetExecutionContext):
@@ -195,3 +200,7 @@ def download_filtered_pictures(context: dg.AssetExecutionContext):
             context.log.info(f"Image {image.image_id} saved as {image.parent_post_id}-{image.image_id}.{image.extension}")
         else:
             context.log.error(f"Failed to download filtered image {image.image_id}")
+
+    return dg.MaterializeResult(
+        metadata={"downloaded_filtered_images_count": len(images)}
+    )
