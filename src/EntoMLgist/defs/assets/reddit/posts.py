@@ -87,11 +87,12 @@ def save_hot_posts_to_db(context: dg.AssetExecutionContext):
                     upvotes=0
                 )
                 session.merge(db_post)
+                session.commit()  # Commit after each post to isolate transactions
                 saved_count += 1
             except Exception as e:
                 context.log.error(f"Failed to save post {post.post_id}: {e}")
+                session.rollback()  # Rollback failed transaction to allow processing to continue
         
-        session.commit()
         context.log.info(f"Successfully saved {saved_count} posts to database")
         
     except Exception as e:

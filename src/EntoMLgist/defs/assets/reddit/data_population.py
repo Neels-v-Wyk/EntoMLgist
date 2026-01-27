@@ -108,19 +108,23 @@ def populate_post_upvotes(context: dg.AssetExecutionContext, fetch_post_data: di
     posts = get_posts_from_db(session)
 
     for post in posts:
-        if post.post_id not in fetch_post_data:
-            context.log.warning(f"No cached data for post {post.post_id}")
-            continue
-        
-        data = fetch_post_data[post.post_id]
-        post_data = data[0]['data']['children'][0]['data']
-        post.upvotes = post_data.get('ups', 0)
+        try:
+            if post.post_id not in fetch_post_data:
+                context.log.warning(f"No cached data for post {post.post_id}")
+                continue
+            
+            data = fetch_post_data[post.post_id]
+            post_data = data[0]['data']['children'][0]['data']
+            post.upvotes = post_data.get('ups', 0)
 
-        context.log.info(f"Post {post.post_id} has {post.upvotes} upvotes")
-        
-        session.add(post)
-    
-    session.commit()
+            context.log.info(f"Post {post.post_id} has {post.upvotes} upvotes")
+            
+            session.add(post)
+            session.commit()  # Commit after each post to isolate transactions
+            
+        except Exception as e:
+            context.log.error(f"Error updating upvotes for post {post.post_id}: {e}")
+            session.rollback()  # Rollback failed transaction to allow processing to continue
 
 @dg.asset(required_resource_keys={"db_session"})
 def populate_comments(context: dg.AssetExecutionContext, fetch_post_data: dict):
@@ -158,10 +162,11 @@ def populate_comments(context: dg.AssetExecutionContext, fetch_post_data: dict):
                 )
                 session.merge(db_comment)
 
+            # Commit after each post to isolate transactions
+            session.commit()
             context.log.info(f"Inserted comments for post {post.post_id}")
             sleep(POST_CRAWL_DELAY)
 
         except Exception as e:
             context.log.error(f"Unexpected error while processing post {post.post_id}: {e}")
-
-    session.commit()
+            session.rollback()  # Rollback failed transaction to allow processing to continue
