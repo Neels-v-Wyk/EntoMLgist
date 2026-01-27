@@ -218,3 +218,6 @@ __marimo__/
 
 # local downloads:
 downloads/
+
+# dagster junk
+.tmp_dagster*
