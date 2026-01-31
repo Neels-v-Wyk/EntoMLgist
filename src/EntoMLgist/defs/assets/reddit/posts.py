@@ -3,7 +3,8 @@ import requests
 import dagster as dg
 from EntoMLgist.models.reddit import RedditPost
 from EntoMLgist.defs.assets.reddit.constants import SUBREDDIT, DEFAULT_USER_AGENT, POST_CRAWL_DELAY, TOTAL_PICTURES
-
+from sqlmodel import Session
+from EntoMLgist.models.database import Post
 
 def get_posts(limit: int = 100) -> requests.Response:
     # TODO: Implement connection pooling and add request timeout/retry decorator
@@ -64,8 +65,6 @@ def get_hot_posts(context: dg.AssetExecutionContext) -> list[RedditPost]:
 @dg.asset(required_resource_keys={"db_session"}, deps=["create_database_tables"])
 def save_hot_posts_to_db(context: dg.AssetExecutionContext):
     # TODO: Use bulk insert for better performance, handle duplicate key errors gracefully with upsert
-    from sqlmodel import Session
-    from EntoMLgist.models.database import Post
     
     try:
         posts = get_hot_posts(context)
@@ -88,6 +87,8 @@ def save_hot_posts_to_db(context: dg.AssetExecutionContext):
                 )
                 session.merge(db_post)
                 session.commit()  # Commit after each post to isolate transactions
+                # TODO: Only commit to db if new or updated
+                context.log.info(f"Saved post {post.post_id} to database")
                 saved_count += 1
             except Exception as e:
                 context.log.error(f"Failed to save post {post.post_id}: {e}")

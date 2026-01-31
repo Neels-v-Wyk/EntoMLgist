@@ -10,8 +10,6 @@ class Post(SQLModel, table=True):
     post_id: str = Field(primary_key=True, description="Reddit post ID")
     title: str = Field(description="Post title")
     upvotes: int = Field(default=0, description="Number of upvotes")
-    extracted_location: Optional[str] = Field(default=None, description="Extracted insect location from post, if any")
-    extracted_location_confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     
     # Relationships
     comments: list["Comment"] = Relationship(back_populates="post", cascade_delete=True)
@@ -28,10 +26,6 @@ class Comment(SQLModel, table=True):
     upvotes: int = Field(default=0, description="Number of upvotes")
     extracted_name: Optional[str] = Field(default=None, description="Extracted insect name from comment, if any")
     extracted_name_confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
-    extracted_species: Optional[str] = Field(default=None, description="Extracted insect species from comment, if any")
-    extracted_species_confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
-    extracted_genus: Optional[str] = Field(default=None, description="Extracted insect genus from comment, if any")
-    extracted_genus_confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     
     # Relationships
     post: Optional[Post] = Relationship(back_populates="comments")

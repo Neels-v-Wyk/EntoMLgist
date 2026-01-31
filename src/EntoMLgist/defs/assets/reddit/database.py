@@ -20,14 +20,14 @@ def create_database_tables(context: dg.AssetExecutionContext):
         session: Session = context.resources.db_session
         
         # Ensure all expected columns exist (handles schema evolution)
-        # Add missing columns to posts table
+        # Add missing columns to comments table
         session.exec(text(
-            "ALTER TABLE posts ADD COLUMN IF NOT EXISTS extracted_location TEXT"
+            "ALTER TABLE comments ADD COLUMN IF NOT EXISTS extracted_name TEXT"
         ))
         session.exec(text(
-            "ALTER TABLE posts ADD COLUMN IF NOT EXISTS extracted_location_confidence REAL"
+            "ALTER TABLE comments ADD COLUMN IF NOT EXISTS extracted_name_confidence REAL"
         ))
-        context.log.info("Ensured posts table has all required columns")
+        context.log.info("Ensured comments table has all required columns")
         
         # Create additional indexes for better query performance
         # Index for comments by parent post
