@@ -24,7 +24,13 @@ deps-dagster: deps-uv ## Install dagster
 
 db-up: ## Start PostgreSQL database using Docker
 	@echo "Starting PostgreSQL database..."
-	@docker ps -q --filter "name=entomlgist-postgres" | grep -q . && echo "Database already running" || \
+	@if docker ps -q --filter "name=entomlgist-postgres" | grep -q .; then \
+		echo "Database already running"; \
+	elif docker ps -aq --filter "name=entomlgist-postgres" | grep -q .; then \
+		echo "Starting existing container..."; \
+		docker start entomlgist-postgres; \
+	else \
+		echo "Creating new container..."; \
 		docker run -d \
 			--name entomlgist-postgres \
 			-e POSTGRES_USER=entomlgist \
@@ -32,7 +38,8 @@ db-up: ## Start PostgreSQL database using Docker
 			-e POSTGRES_DB=entomlgist \
 			-p 5432:5432 \
 			-v $$(pwd)/postgres_data:/var/lib/postgresql/data \
-			postgres:16-alpine
+			postgres:16-alpine; \
+	fi
 	@echo "Waiting for database to be ready..."
 	@until docker exec entomlgist-postgres pg_isready -U entomlgist -q 2>/dev/null; do \
 		echo "Waiting for database..."; \

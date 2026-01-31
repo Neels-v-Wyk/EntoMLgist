@@ -15,6 +15,7 @@ from EntoMLgist.defs.assets.reddit.download import (
     download_filtered_pictures,
 )
 from EntoMLgist.defs.assets.nlp.comment_extraction import extract_insect_names_from_comments
+from EntoMLgist.defs.assets.nlp.name_normalization import normalize_insect_names
 from EntoMLgist.defs.jobs import all_assets_job, full_reddit_pipeline_job
 
 @dg.resource
@@ -50,6 +51,7 @@ all_assets = [
     # download_all_pictures,  # Temporarily disabled
     download_filtered_pictures,
     extract_insect_names_from_comments,
+    normalize_insect_names,
 ]
 
 defs = dg.Definitions(
