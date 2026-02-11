@@ -75,7 +75,7 @@ Database credentials are in `.env` (copy from `.env.example` if needed).
 - [x] Retrieve images and comments from /r/whatisthisbug
 - [x] Store data in PostgreSQL (no duplicates)
 - [x] Extract insect names from comments using GLiNER2
-- [ ] Normalize names to scientific taxonomy via GBIF API (handle "ladybug"/"ladybird" synonyms)
+- [x] Normalize names to scientific taxonomy via GBIF API (handle "ladybug"/"ladybird" synonyms)
 - [ ] Build consensus scoring (filter posts where multiple comments agree on ID)
 - [ ] Collect 500-1000 high-confidence labeled images
 
