@@ -10,6 +10,12 @@ from EntoMLgist.defs.assets.reddit.download import (
     get_image_uris_from_posts,
     download_filtered_pictures,
 )
+from EntoMLgist.defs.assets.nlp.comment_extraction import extract_insect_names_from_comments
+from EntoMLgist.defs.assets.nlp.name_normalization import normalize_insect_names
+from EntoMLgist.defs.assets.nlp.gbif_enrichment import (
+    enrich_taxonomy_from_gbif,
+    link_images_to_taxonomy,
+)
 
 all_assets_job = dg.define_asset_job(name="all_assets_job")
 
@@ -22,6 +28,10 @@ full_reddit_pipeline_job = dg.define_asset_job(
         populate_post_upvotes,
         populate_comments,
         get_image_uris_from_posts,
-        download_filtered_pictures
+        download_filtered_pictures,
+        extract_insect_names_from_comments,
+        normalize_insect_names,
+        enrich_taxonomy_from_gbif,
+        link_images_to_taxonomy,
     )
 )

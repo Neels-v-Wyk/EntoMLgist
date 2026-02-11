@@ -1,6 +1,6 @@
 import dagster as dg
 from sqlmodel import SQLModel, Session, text
-from EntoMLgist.models.database import Post, Comment, ImageUrl
+from EntoMLgist.models.database import Post, Comment, ImageUrl, TaxonomicName, ImageTaxonomyLink
 from EntoMLgist.database_config import engine
 
 
@@ -49,6 +49,45 @@ def create_database_tables(context: dg.AssetExecutionContext):
         session.exec(text(
             "CREATE INDEX IF NOT EXISTS idx_image_urls_downloaded ON image_urls(downloaded)"
         ))
+        
+        # Index for comments with extracted names
+        session.exec(text(
+            "CREATE INDEX IF NOT EXISTS idx_comments_extracted_name ON comments(extracted_name)"
+        ))
+        
+        # Index for taxonomic_names by lookup success
+        session.exec(text(
+            "CREATE INDEX IF NOT EXISTS idx_taxonomic_names_success ON taxonomic_names(lookup_success)"
+        ))
+        
+        # Index for taxonomic_names by is_insect
+        session.exec(text(
+            "CREATE INDEX IF NOT EXISTS idx_taxonomic_names_insect ON taxonomic_names(is_insect)"
+        ))
+        
+        # Index for image_taxonomy_links by image_id
+        session.exec(text(
+            "CREATE INDEX IF NOT EXISTS idx_image_taxonomy_image ON image_taxonomy_links(image_id)"
+        ))
+        
+        # Index for image_taxonomy_links by common_name
+        session.exec(text(
+            "CREATE INDEX IF NOT EXISTS idx_image_taxonomy_name ON image_taxonomy_links(common_name)"
+        ))
+        
+        # Add new columns to image_taxonomy_links for quality scoring
+        session.exec(text(
+            "ALTER TABLE image_taxonomy_links ADD COLUMN IF NOT EXISTS gbif_confidence INTEGER"
+        ))
+        session.exec(text(
+            "ALTER TABLE image_taxonomy_links ADD COLUMN IF NOT EXISTS label_quality_score REAL"
+        ))
+        
+        # Index for filtering by label quality (critical for training data selection)
+        session.exec(text(
+            "CREATE INDEX IF NOT EXISTS idx_image_taxonomy_quality ON image_taxonomy_links(label_quality_score DESC)"
+        ))
+        context.log.info("Ensured image_taxonomy_links has quality score columns")
         
         session.commit()
         context.log.info("Database indexes created successfully")

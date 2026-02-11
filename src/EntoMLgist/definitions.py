@@ -16,6 +16,10 @@ from EntoMLgist.defs.assets.reddit.download import (
 )
 from EntoMLgist.defs.assets.nlp.comment_extraction import extract_insect_names_from_comments
 from EntoMLgist.defs.assets.nlp.name_normalization import normalize_insect_names
+from EntoMLgist.defs.assets.nlp.gbif_enrichment import (
+    enrich_taxonomy_from_gbif,
+    link_images_to_taxonomy,
+)
 from EntoMLgist.defs.jobs import all_assets_job, full_reddit_pipeline_job
 
 @dg.resource
@@ -52,6 +56,8 @@ all_assets = [
     download_filtered_pictures,
     extract_insect_names_from_comments,
     normalize_insect_names,
+    enrich_taxonomy_from_gbif,
+    link_images_to_taxonomy,
 ]
 
 defs = dg.Definitions(
